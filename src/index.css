@@ -1,0 +1,257 @@
+@import '@fontsource/rokkitt/400.css';
+@import '@fontsource/rokkitt/500.css';
+@import '@fontsource/rokkitt/600.css';
+@import '@fontsource/rokkitt/700.css';
+@import '@fontsource/jetbrains-mono/400.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light Mode - Default */
+    --background: 0 0% 100%;
+    --background-secondary: 210 20% 98%;
+    --background-elevated: 220 14% 96%;
+    
+    --foreground: 220 13% 9%;
+    --foreground-secondary: 220 9% 46%;
+    
+    --card: 210 20% 98%;
+    --card-foreground: 220 13% 9%;
+    
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 13% 9%;
+    
+    /* Wolt Blue Primary */
+    --primary: 197 100% 44%;
+    --primary-hover: 199 100% 39%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 13% 9%;
+    
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    
+    --accent: 197 100% 44%;
+    --accent-foreground: 0 0% 100%;
+    
+    /* Status Colors */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --success-muted: 142 71% 95%;
+    
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --warning-muted: 38 92% 95%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-muted: 0 84% 95%;
+    
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 197 100% 44%;
+    
+    --radius: 0.75rem;
+    
+    /* Sidebar */
+    --sidebar-background: 210 20% 98%;
+    --sidebar-foreground: 220 9% 46%;
+    --sidebar-primary: 220 13% 9%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 197 100% 44%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 197 100% 44%;
+    
+    /* Chart colors */
+    --chart-1: 197 100% 44%;
+    --chart-2: 142 71% 45%;
+    --chart-3: 38 92% 50%;
+    --chart-4: 0 84% 60%;
+    --chart-5: 262 83% 58%;
+  }
+
+  .dark {
+    --background: 0 0% 7%;
+    --background-secondary: 0 0% 10%;
+    --background-elevated: 0 0% 14%;
+    
+    --foreground: 0 0% 100%;
+    --foreground-secondary: 220 9% 61%;
+    
+    --card: 0 0% 10%;
+    --card-foreground: 0 0% 100%;
+    
+    --popover: 0 0% 10%;
+    --popover-foreground: 0 0% 100%;
+    
+    /* Wolt Blue Primary */
+    --primary: 197 100% 44%;
+    --primary-hover: 195 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    
+    --secondary: 0 0% 14%;
+    --secondary-foreground: 0 0% 100%;
+    
+    --muted: 0 0% 14%;
+    --muted-foreground: 220 9% 61%;
+    
+    --accent: 197 100% 44%;
+    --accent-foreground: 0 0% 100%;
+    
+    /* Status Colors */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    --success-muted: 142 71% 15%;
+    
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+    --warning-muted: 38 92% 15%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-muted: 0 62% 20%;
+    
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 197 100% 44%;
+    
+    /* Sidebar */
+    --sidebar-background: 0 0% 10%;
+    --sidebar-foreground: 220 9% 61%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 0 0% 7%;
+    --sidebar-accent: 197 100% 44%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 197 100% 44%;
+    
+    /* Chart colors */
+    --chart-1: 197 100% 50%;
+    --chart-2: 142 71% 50%;
+    --chart-3: 38 92% 55%;
+    --chart-4: 0 84% 65%;
+    --chart-5: 262 83% 63%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    font-family: 'Rokkitt', Georgia, serif;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+  
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  /* Custom scrollbar */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(var(--border));
+    border-radius: 3px;
+  }
+}
+
+/* Smooth transitions */
+@layer base {
+  * {
+    @apply transition-colors duration-200;
+  }
+}
+
+/* Focus ring styles */
+@layer base {
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
+/* Hero gradient animation - Wolt Blue */
+.hero-gradient-animated {
+  background: linear-gradient(135deg, #006d9c 0%, #009de0 50%, #00b4ff 100%);
+  background-size: 200% 200%;
+  animation: gradient-shift 8s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* Floating animation for decorative icons */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 6s ease-in-out infinite;
+  animation-delay: -2s;
+}
+
+.animate-float-slow {
+  animation: float 8s ease-in-out infinite;
+  animation-delay: -4s;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(5deg); }
+}
+
+/* Entry animations */
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out forwards;
+  opacity: 0;
+}
+
+.animation-delay-200 { animation-delay: 0.2s; }
+.animation-delay-400 { animation-delay: 0.4s; }
+.animation-delay-600 { animation-delay: 0.6s; }
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dot pattern overlay */
+.dot-pattern {
+  background-image: radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
