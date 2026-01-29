@@ -29,3 +29,24 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local tool configs - user-specific
+.mcp.json
+.claude/
+
+# Debug scripts
+debug-*.ts
+debug-*.js
+
+# Internal development reports
+BLOAT_REPORT.md
+CLEANUP_REPORT.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
