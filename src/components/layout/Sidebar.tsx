@@ -15,6 +15,7 @@ import {
     Store,
     Menu,
     FileWarning,
+    UserCog,
     LucideIcon
 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
@@ -54,6 +55,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         { icon: Home, label: 'Dashboard', path: '/supplier/dashboard' },
         { icon: ShoppingCart, label: 'Incoming Orders', path: '/supplier/orders' },
         { icon: Truck, label: 'Outgoing Deliveries', path: '/supplier/deliveries' },
+        { icon: UserCog, label: 'Drivers', path: '/supplier/drivers' },
         { icon: AlertTriangle, label: 'Delivery Issues', path: '/supplier/issues' },
         { icon: ClipboardList, label: 'Product Catalog', path: '/supplier/products' },
         { icon: Users, label: 'Connected Restaurants', path: '/supplier/restaurants' },

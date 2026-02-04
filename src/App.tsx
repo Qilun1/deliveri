@@ -37,6 +37,10 @@ import {
   SupplierAnalytics,
   RestaurantDetailPage
 } from "./pages/supplier";
+import DriversPage from "./pages/supplier/DriversPage";
+
+// GPS Tracking CSS
+import '@/styles/leaflet-fix.css';
 
 const queryClient = new QueryClient();
 
@@ -126,6 +130,7 @@ function AppRoutes() {
       <Route path="/supplier/restaurants" element={<ProtectedRoute><AppLayout><ConnectedRestaurants /></AppLayout></ProtectedRoute>} />
       <Route path="/supplier/restaurant/:restaurantId" element={<ProtectedRoute><AppLayout><RestaurantDetailPage /></AppLayout></ProtectedRoute>} />
       <Route path="/supplier/analytics" element={<ProtectedRoute><AppLayout><SupplierAnalytics /></AppLayout></ProtectedRoute>} />
+      <Route path="/supplier/drivers" element={<ProtectedRoute><AppLayout><DriversPage /></AppLayout></ProtectedRoute>} />
 
       {/* Onboarding */}
       <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
