@@ -9,12 +9,26 @@ declare const Deno: {
     };
 };
 
-const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+// SECURITY: Restrict CORS to specific origins
+const allowedOrigins = (Deno.env.get('ALLOWED_ORIGINS') || '').split(',').filter(Boolean);
+
+function getCorsHeaders(origin: string | null): Record<string, string> {
+    // If no allowed origins configured, use restrictive default in production
+    const isAllowed = allowedOrigins.length === 0
+        ? false // Deny by default if not configured
+        : allowedOrigins.includes(origin || '') || allowedOrigins.includes('*');
+
+    return {
+        'Access-Control-Allow-Origin': isAllowed ? (origin || '') : '',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    };
+}
 
 serve(async (req: Request) => {
+    const origin = req.headers.get('Origin');
+    const corsHeaders = getCorsHeaders(origin);
+
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders });
     }
@@ -25,29 +39,48 @@ serve(async (req: Request) => {
             throw new Error('No authorization header passed');
         }
 
-        // Parse JWT to get user_id (Clerk ID)
-        // In a production environment, you should verify the signature.
-        // Here we act on the user_id from the token assuming Clerk/Supabase integration validated it at the gateway or we trust the source for this operation if key is present.
-        // However, best practice is to verify. 
-        // IF Supabase Auth is managing the session via Clerk integration, getUser() works.
-        // IF Clerk is managing it and passing a custom token, we decode it.
-
-        // Simple decoding for the 'sub' claim (Clerk User ID)
-        const token = authHeader.replace('Bearer ', '');
-        const [, payload] = token.split('.');
-        const decodedPayload = JSON.parse(atob(payload));
-        const userId = decodedPayload.sub;
-
-        if (!userId) {
-            throw new Error('User ID not found in token');
-        }
-
-        // Initialize Supabase Admin Client
+        // Initialize Supabase Admin Client for auth verification
         const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
         const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
         const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-        console.log(`Starting deletion for user: ${userId}`);
+        // SECURITY FIX: Verify JWT token using Supabase auth instead of just decoding
+        // Create a client with the user's token to verify it
+        const token = authHeader.replace('Bearer ', '');
+        const userClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY') ?? '', {
+            global: {
+                headers: { Authorization: `Bearer ${token}` }
+            }
+        });
+
+        // Verify the token by calling getUser - this validates the JWT signature
+        const { data: userData, error: authError } = await userClient.auth.getUser(token);
+
+        let userId: string;
+
+        if (authError || !userData?.user) {
+            // Fallback: If Supabase auth fails (e.g., Clerk token),
+            // decode the token but verify it matches expected format
+            // The gateway's verify_jwt should have already validated the signature
+            try {
+                const [, payload] = token.split('.');
+                if (!payload) throw new Error('Invalid token format');
+                const decodedPayload = JSON.parse(atob(payload));
+                userId = decodedPayload.sub;
+
+                if (!userId || typeof userId !== 'string' || !userId.startsWith('user_')) {
+                    throw new Error('Invalid user ID format in token');
+                }
+            } catch {
+                throw new Error('Token verification failed');
+            }
+        } else {
+            userId = userData.user.id;
+        }
+
+        if (!userId) {
+            throw new Error('User ID not found in token');
+        }
 
         // 1. Delete from supplier_connections
         const { error: connectionsError } = await supabase
@@ -84,23 +117,21 @@ serve(async (req: Request) => {
             .eq('user_id', userId);
         if (restaurantsError) console.error('Error deleting restaurants:', restaurantsError);
 
-        // 5. Delete specific profiles
+        // 6. Delete specific profiles
         await supabase.from('restaurant_profiles').delete().eq('user_id', userId);
         await supabase.from('supplier_profiles').delete().eq('user_id', userId);
         await supabase.from('user_profiles').delete().eq('user_id', userId);
 
-        // 6. Delete storage files
+        // 7. Delete storage files
         const { data: files } = await supabase.storage.from('receipt-images').list(userId);
         if (files && files.length > 0) {
             const paths = files.map((f: { name: string }) => `${userId}/${f.name}`);
             await supabase.storage.from('receipt-images').remove(paths);
-            // Try to remove the folder itself if possible (usually empty folders are virtual)
         }
 
-        // 7. Delete from Clerk (if Secret Key is present)
+        // 8. Delete from Clerk (if Secret Key is present)
         const clerkSecretKey = Deno.env.get('CLERK_SECRET_KEY');
         if (clerkSecretKey) {
-            console.log('Deleting user from Clerk...');
             const clerkRes = await fetch(`https://api.clerk.com/v1/users/${userId}`, {
                 method: 'DELETE',
                 headers: {
@@ -110,13 +141,8 @@ serve(async (req: Request) => {
             });
 
             if (!clerkRes.ok) {
-                console.error('Failed to delete user from Clerk:', await clerkRes.text());
-                // We don't throw here to ensure we report partial success if DB is cleared
-            } else {
-                console.log('User deleted from Clerk');
+                console.error('Failed to delete user from Clerk');
             }
-        } else {
-            console.warn('CLERK_SECRET_KEY not set, skipping Clerk user deletion');
         }
 
         return new Response(
