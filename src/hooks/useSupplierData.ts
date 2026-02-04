@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { useAuthenticatedSupabase } from '@/hooks/useAuthenticatedSupabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { useUser } from '@clerk/clerk-react';
 import * as mock from '@/data/mockData';
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
@@ -62,17 +61,20 @@ export interface SupplierStats {
  * These are orders placed by restaurants that need to be fulfilled
  */
 export function useSupplierDeliveries() {
-    const { user } = useUser();
+    const { user } = useAuth();
     const supabase = useAuthenticatedSupabase();
-    const supplierName = (user?.publicMetadata?.companyName || user?.unsafeMetadata?.companyName || 'Kespro') as string;
+    const supplierId = user?.businessId || '';
+    const supplierName = user?.companyName || 'Kespro';
 
     return useQuery({
-        queryKey: ['supplier-deliveries', supplierName],
+        queryKey: ['supplier-deliveries', supplierId],
         queryFn: async () => {
+            if (!supplierId) return [];
+
             const { data, error } = await supabase
                 .from('deliveries')
                 .select('*')
-                .eq('supplier_name', supplierName)
+                .eq('supplier_id', supplierId)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -101,6 +103,7 @@ export function useSupplierDeliveries() {
 
             return data as Delivery[];
         },
+        enabled: !!supplierId,
     });
 }
 
@@ -108,23 +111,26 @@ export function useSupplierDeliveries() {
  * Fetch deliveries with specific statuses (for filtering)
  */
 export function useSupplierDeliveriesByStatus(statuses: string[]) {
-    const { user } = useUser();
+    const { user } = useAuth();
     const supabase = useAuthenticatedSupabase();
-    const supplierName = (user?.publicMetadata?.companyName || user?.unsafeMetadata?.companyName || 'Kespro') as string;
+    const supplierId = user?.businessId || '';
 
     return useQuery({
-        queryKey: ['supplier-deliveries', supplierName, 'status', statuses],
+        queryKey: ['supplier-deliveries', supplierId, 'status', statuses],
         queryFn: async () => {
+            if (!supplierId) return [];
+
             const { data, error } = await supabase
                 .from('deliveries')
                 .select('*')
-                .eq('supplier_name', supplierName)
+                .eq('supplier_id', supplierId)
                 .in('status', statuses)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
             return data as Delivery[];
         },
+        enabled: !!supplierId,
     });
 }
 
@@ -168,17 +174,20 @@ export function useSupplierDeliveryWithItems(deliveryId: string | undefined) {
  * Fetch deliveries with discrepancies (missing_value > 0)
  */
 export function useSupplierIssues() {
-    const { user } = useUser();
+    const { user } = useAuth();
     const supabase = useAuthenticatedSupabase();
-    const supplierName = (user?.publicMetadata?.companyName || user?.unsafeMetadata?.companyName || 'Kespro') as string;
+    const supplierId = user?.businessId || '';
+    const supplierName = user?.companyName || 'Kespro';
 
     return useQuery({
-        queryKey: ['supplier-issues', supplierName],
+        queryKey: ['supplier-issues', supplierId],
         queryFn: async () => {
+            if (!supplierId) return [];
+
             const { data, error } = await supabase
                 .from('deliveries')
                 .select('*')
-                .eq('supplier_name', supplierName)
+                .eq('supplier_id', supplierId)
                 .gt('missing_value', 0)
                 .order('created_at', { ascending: false });
 
@@ -208,6 +217,7 @@ export function useSupplierIssues() {
 
             return data as Delivery[];
         },
+        enabled: !!supplierId,
     });
 }
 
@@ -215,17 +225,20 @@ export function useSupplierIssues() {
  * Fetch open issues (pending_redelivery status)
  */
 export function useSupplierOpenIssues() {
-    const { user } = useUser();
+    const { user } = useAuth();
     const supabase = useAuthenticatedSupabase();
-    const supplierName = (user?.publicMetadata?.companyName || user?.unsafeMetadata?.companyName || 'Kespro') as string;
+    const supplierId = user?.businessId || '';
+    const supplierName = user?.companyName || 'Kespro';
 
     return useQuery({
-        queryKey: ['supplier-open-issues', supplierName],
+        queryKey: ['supplier-open-issues', supplierId],
         queryFn: async () => {
+            if (!supplierId) return [];
+
             const { data, error } = await supabase
                 .from('deliveries')
                 .select('*')
-                .eq('supplier_name', supplierName)
+                .eq('supplier_id', supplierId)
                 .eq('status', 'pending_redelivery')
                 .order('created_at', { ascending: false });
 
@@ -255,6 +268,7 @@ export function useSupplierOpenIssues() {
 
             return data as Delivery[];
         },
+        enabled: !!supplierId,
     });
 }
 
@@ -293,17 +307,20 @@ export interface ConnectedRestaurant {
  * Aggregated from deliveries table
  */
 export function useSupplierRestaurants() {
-    const { user } = useUser();
+    const { user } = useAuth();
     const supabase = useAuthenticatedSupabase();
-    const supplierName = (user?.publicMetadata?.companyName || user?.unsafeMetadata?.companyName || 'Kespro') as string;
+    const supplierId = user?.businessId || '';
+    const supplierName = user?.companyName || 'Kespro';
 
     return useQuery({
-        queryKey: ['supplier-restaurants', supplierName],
+        queryKey: ['supplier-restaurants', supplierId],
         queryFn: async () => {
+            if (!supplierId) return [];
+
             let { data, error } = await supabase
                 .from('deliveries')
                 .select('user_id, total_value, delivery_date')
-                .eq('supplier_name', supplierName);
+                .eq('supplier_id', supplierId);
 
             if (error) throw error;
 
@@ -345,6 +362,7 @@ export function useSupplierRestaurants() {
                 (a, b) => b.totalValue - a.totalValue
             );
         },
+        enabled: !!supplierId,
     });
 }
 
@@ -354,17 +372,20 @@ export function useSupplierRestaurants() {
  * Get supplier dashboard statistics
  */
 export function useSupplierStats() {
-    const { user } = useUser();
+    const { user } = useAuth();
     const supabase = useAuthenticatedSupabase();
-    const supplierName = (user?.publicMetadata?.companyName || user?.unsafeMetadata?.companyName || 'Kespro') as string;
+    const supplierId = user?.businessId || '';
+    const supplierName = user?.companyName || 'Kespro';
 
     return useQuery({
-        queryKey: ['supplier-stats', supplierName],
+        queryKey: ['supplier-stats', supplierId],
         queryFn: async () => {
+            if (!supplierId) return null;
+
             const { data, error } = await supabase
                 .from('deliveries')
                 .select('id, user_id, status, total_value, missing_value')
-                .eq('supplier_name', supplierName);
+                .eq('supplier_id', supplierId);
 
             if (error) throw error;
 
@@ -401,6 +422,7 @@ export function useSupplierStats() {
 
             return stats;
         },
+        enabled: !!supplierId,
     });
 }
 
@@ -410,7 +432,7 @@ export function useSupplierStats() {
  * Update delivery status (e.g., resolve an issue)
  */
 export function useUpdateDeliveryStatus() {
-    const { user } = useUser();
+    const { user } = useAuth();
     const queryClient = useQueryClient();
     const supabase = useAuthenticatedSupabase();
 
@@ -450,17 +472,20 @@ export function useUpdateDeliveryStatus() {
  * Get recent deliveries (for dashboard)
  */
 export function useRecentSupplierDeliveries(limit: number = 5) {
-    const { user } = useUser();
+    const { user } = useAuth();
     const supabase = useAuthenticatedSupabase();
-    const supplierName = (user?.publicMetadata?.companyName || user?.unsafeMetadata?.companyName || 'Kespro') as string;
+    const supplierId = user?.businessId || '';
+    const supplierName = user?.companyName || 'Kespro';
 
     return useQuery({
-        queryKey: ['supplier-recent-deliveries', supplierName, limit],
+        queryKey: ['supplier-recent-deliveries', supplierId, limit],
         queryFn: async () => {
+            if (!supplierId) return [];
+
             const { data, error } = await supabase
                 .from('deliveries')
                 .select('*')
-                .eq('supplier_name', supplierName)
+                .eq('supplier_id', supplierId)
                 .order('created_at', { ascending: false })
                 .limit(limit);
 
@@ -491,6 +516,7 @@ export function useRecentSupplierDeliveries(limit: number = 5) {
 
             return data as Delivery[];
         },
+        enabled: !!supplierId,
     });
 }
 
@@ -507,9 +533,9 @@ export interface RealtimeDeliveryEvent {
  * This is CRITICAL for demos - suppliers see reports as they arrive
  */
 export function useRealtimeDeliveries(onNewReport?: (event: RealtimeDeliveryEvent) => void) {
-    const { user } = useUser();
+    const { user } = useAuth();
     const supabase = useAuthenticatedSupabase();
-    const supplierName = (user?.publicMetadata?.companyName || user?.unsafeMetadata?.companyName || 'Kespro') as string;
+    const supplierId = user?.businessId || '';
     const queryClient = useQueryClient();
     const channelRef = useRef<RealtimeChannel | null>(null);
     const [isConnected, setIsConnected] = useState(false);
@@ -519,8 +545,8 @@ export function useRealtimeDeliveries(onNewReport?: (event: RealtimeDeliveryEven
         (payload: RealtimePostgresChangesPayload<Delivery>) => {
             const delivery = payload.new as Delivery;
 
-            // Only process if this delivery is for our supplier
-            if (delivery?.supplier_name !== supplierName) return;
+            // Only process if this delivery is for our supplier (check supplier_id)
+            if (delivery?.supplier_id !== supplierId) return;
 
             const event: RealtimeDeliveryEvent = {
                 type: payload.eventType as 'INSERT' | 'UPDATE' | 'DELETE',
@@ -543,14 +569,14 @@ export function useRealtimeDeliveries(onNewReport?: (event: RealtimeDeliveryEven
                 onNewReport(event);
             }
         },
-        [supplierName, queryClient, onNewReport]
+        [supplierId, queryClient, onNewReport]
     );
 
     useEffect(() => {
-        if (!supplierName) return;
+        if (!supplierId) return;
 
         // Create a unique channel name
-        const channelName = `supplier-deliveries-${supplierName.replace(/\s+/g, '-').toLowerCase()}`;
+        const channelName = `supplier-deliveries-${supplierId}`;
 
         // Subscribe to changes on the deliveries table
         const channel = supabase
@@ -561,6 +587,7 @@ export function useRealtimeDeliveries(onNewReport?: (event: RealtimeDeliveryEven
                     event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
                     schema: 'public',
                     table: 'deliveries',
+                    filter: `supplier_id=eq.${supplierId}`,
                 },
                 handleRealtimeChange
             )
@@ -578,7 +605,7 @@ export function useRealtimeDeliveries(onNewReport?: (event: RealtimeDeliveryEven
                 setIsConnected(false);
             }
         };
-    }, [supplierName, handleRealtimeChange]);
+    }, [supplierId, supabase, handleRealtimeChange]);
 
     return {
         isConnected,

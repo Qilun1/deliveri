@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useCallback, useRef, useState } from 'react';
 import { useAuthenticatedSupabase } from '@/hooks/useAuthenticatedSupabase';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth } from '@/contexts/AuthContext';
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 // Types for missing items reports
@@ -70,9 +70,9 @@ export interface ReportFilters {
  * Provides real-time subscription, fetching, and mutations
  */
 export function useSupplierReports() {
-    const { user } = useUser();
+    const { user } = useAuth();
     const supabase = useAuthenticatedSupabase();
-    const supplierId = user?.id || '';
+    const supplierId = user?.businessId || '';
     const queryClient = useQueryClient();
 
     // Real-time state
@@ -134,7 +134,7 @@ export function useSupplierReports() {
                 setIsConnected(false);
             }
         };
-    }, [supplierId, handleRealtimeChange]);
+    }, [supplierId, supabase, handleRealtimeChange]);
 
     return {
         supplierId,
@@ -147,9 +147,9 @@ export function useSupplierReports() {
  * Fetch all reports for the supplier with optional filtering
  */
 export function useSupplierReportsList(filters?: ReportFilters) {
-    const { user } = useUser();
+    const { user } = useAuth();
     const supabase = useAuthenticatedSupabase();
-    const supplierId = user?.id || '';
+    const supplierId = user?.businessId || '';
 
     return useQuery({
         queryKey: ['supplier-reports', supplierId, filters],

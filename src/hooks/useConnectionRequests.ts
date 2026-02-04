@@ -279,7 +279,7 @@ export function useConnectionRequests(): UseConnectionRequestsReturn {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user?.id, fetchRequests]);
+  }, [user?.id, supabase, fetchRequests]);
 
   return {
     sendConnectionRequest,

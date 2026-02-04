@@ -14,6 +14,7 @@ import {
     ClipboardList,
     Store,
     Menu,
+    FileWarning,
     LucideIcon
 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
@@ -41,6 +42,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     const restaurantMenuItems: MenuItem[] = [
         { icon: Home, label: 'Dashboard', path: '/dashboard' },
         { icon: Package, label: 'Deliveries', path: '/deliveries' },
+        { icon: FileWarning, label: 'Reclamations', path: '/reclamations' },
         { icon: BarChart3, label: 'Analytics', path: '/analytics' },
         { icon: Building2, label: 'Suppliers', path: '/suppliers' },
         { icon: Store, label: 'Profile', path: '/restaurant/profile' },

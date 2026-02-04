@@ -22,6 +22,7 @@ import AnalyticsPage from "./pages/AnalyticsPage";
 import SettingsPage from "./pages/SettingsPage";
 import RestaurantProfilePage from "./pages/RestaurantProfilePage";
 import UploadReceiptPage from "./pages/UploadReceiptPage";
+import ReclamationsPage from "./pages/ReclamationsPage";
 import NotFound from "./pages/NotFound";
 import OnboardingPage from "./components/onboarding/OnboardingPage";
 
@@ -114,6 +115,7 @@ function AppRoutes() {
       <Route path="/restaurant/profile" element={<ProtectedRoute><RestaurantProfilePage /></ProtectedRoute>} />
       <Route path="/extract-receipt" element={<ProtectedRoute><UploadReceiptPage /></ProtectedRoute>} />
       <Route path="/verify-delivery/:deliveryId" element={<ProtectedRoute><UploadReceiptPage /></ProtectedRoute>} />
+      <Route path="/reclamations" element={<ProtectedRoute><ReclamationsPage /></ProtectedRoute>} />
 
       {/* Supplier routes */}
       <Route path="/supplier/dashboard" element={<ProtectedRoute><AppLayout><SupplierDashboard /></AppLayout></ProtectedRoute>} />
