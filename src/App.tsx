@@ -23,6 +23,7 @@ import SettingsPage from "./pages/SettingsPage";
 import RestaurantProfilePage from "./pages/RestaurantProfilePage";
 import UploadReceiptPage from "./pages/UploadReceiptPage";
 import ReclamationsPage from "./pages/ReclamationsPage";
+import ActiveDeliveriesPage from "./pages/ActiveDeliveriesPage";
 import NotFound from "./pages/NotFound";
 import OnboardingPage from "./components/onboarding/OnboardingPage";
 
@@ -38,6 +39,7 @@ import {
   RestaurantDetailPage
 } from "./pages/supplier";
 import DriversPage from "./pages/supplier/DriversPage";
+import DriverMonitoringPage from "./pages/supplier/DriverMonitoringPage";
 
 // GPS Tracking CSS
 import '@/styles/leaflet-fix.css';
@@ -120,6 +122,7 @@ function AppRoutes() {
       <Route path="/extract-receipt" element={<ProtectedRoute><UploadReceiptPage /></ProtectedRoute>} />
       <Route path="/verify-delivery/:deliveryId" element={<ProtectedRoute><UploadReceiptPage /></ProtectedRoute>} />
       <Route path="/reclamations" element={<ProtectedRoute><ReclamationsPage /></ProtectedRoute>} />
+      <Route path="/track-deliveries" element={<ProtectedRoute><ActiveDeliveriesPage /></ProtectedRoute>} />
 
       {/* Supplier routes */}
       <Route path="/supplier/dashboard" element={<ProtectedRoute><AppLayout><SupplierDashboard /></AppLayout></ProtectedRoute>} />
@@ -131,6 +134,7 @@ function AppRoutes() {
       <Route path="/supplier/restaurant/:restaurantId" element={<ProtectedRoute><AppLayout><RestaurantDetailPage /></AppLayout></ProtectedRoute>} />
       <Route path="/supplier/analytics" element={<ProtectedRoute><AppLayout><SupplierAnalytics /></AppLayout></ProtectedRoute>} />
       <Route path="/supplier/drivers" element={<ProtectedRoute><AppLayout><DriversPage /></AppLayout></ProtectedRoute>} />
+      <Route path="/supplier/monitoring" element={<ProtectedRoute><AppLayout><DriverMonitoringPage /></AppLayout></ProtectedRoute>} />
 
       {/* Onboarding */}
       <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />

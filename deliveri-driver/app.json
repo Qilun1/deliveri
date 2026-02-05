@@ -1,0 +1,57 @@
+{
+  "expo": {
+    "name": "DeliVeri Driver",
+    "slug": "deliveri-driver",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#009EE0"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.deliveri.driver",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "DeliVeri needs your location to track deliveries.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "DeliVeri needs your location to track deliveries even when the app is in the background.",
+        "NSLocationAlwaysUsageDescription": "DeliVeri needs your location to track deliveries even when the app is in the background.",
+        "UIBackgroundModes": ["location", "fetch"]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#009EE0"
+      },
+      "package": "com.deliveri.driver",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "DeliVeri needs your location to track deliveries.",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id"
+      }
+    }
+  }
+}

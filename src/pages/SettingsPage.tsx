@@ -7,7 +7,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import MainContent from '@/components/layout/MainContent';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Sun, Moon, User, Bell, AlertTriangle, Loader2, MapPin, Check } from 'lucide-react';
+import { Sun, Moon, User, Bell, AlertTriangle, Loader2, MapPin, Check, Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -27,6 +27,8 @@ interface LocationData {
   city: string;
   street_address: string;
   postal_code: string;
+  latitude: string;
+  longitude: string;
 }
 
 export default function SettingsPage() {
@@ -45,7 +47,10 @@ export default function SettingsPage() {
     city: '',
     street_address: '',
     postal_code: '',
+    latitude: '',
+    longitude: '',
   });
+  const [isGettingGPS, setIsGettingGPS] = useState(false);
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
   const [isSavingLocation, setIsSavingLocation] = useState(false);
   const [locationSaved, setLocationSaved] = useState(false);
@@ -61,7 +66,7 @@ export default function SettingsPage() {
 
         const { data, error } = await supabase
           .from(tableName)
-          .select('city, street_address, postal_code')
+          .select('city, street_address, postal_code, latitude, longitude')
           .eq('id', user.id)
           .single();
 
@@ -74,6 +79,8 @@ export default function SettingsPage() {
             city: data.city || '',
             street_address: data.street_address || '',
             postal_code: data.postal_code || '',
+            latitude: data.latitude?.toString() || '',
+            longitude: data.longitude?.toString() || '',
           });
         }
       } catch (err) {
@@ -100,6 +107,21 @@ export default function SettingsPage() {
     try {
       const tableName = user.role === 'restaurant' ? 'restaurants' : 'suppliers';
 
+      const lat = locationData.latitude ? parseFloat(locationData.latitude) : null;
+      const lng = locationData.longitude ? parseFloat(locationData.longitude) : null;
+
+      // Validate coordinates
+      if (lat !== null && (lat < -90 || lat > 90)) {
+        toast.error('Latitude must be between -90 and 90');
+        setIsSavingLocation(false);
+        return;
+      }
+      if (lng !== null && (lng < -180 || lng > 180)) {
+        toast.error('Longitude must be between -180 and 180');
+        setIsSavingLocation(false);
+        return;
+      }
+
       // Try update first
       const { error: updateError } = await supabase
         .from(tableName)
@@ -107,6 +129,8 @@ export default function SettingsPage() {
           city: locationData.city.trim() || null,
           street_address: locationData.street_address.trim() || null,
           postal_code: locationData.postal_code.trim() || null,
+          latitude: lat,
+          longitude: lng,
           updated_at: new Date().toISOString(),
         })
         .eq('id', user.id);
@@ -140,6 +164,41 @@ export default function SettingsPage() {
       setIsSavingLocation(false);
     }
   }, [user?.id, user?.role, user?.companyName, locationData]);
+
+  // Get current GPS location
+  const getCurrentLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by your browser');
+      return;
+    }
+
+    setIsGettingGPS(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setLocationData(prev => ({
+          ...prev,
+          latitude: position.coords.latitude.toFixed(8),
+          longitude: position.coords.longitude.toFixed(8),
+        }));
+        setIsGettingGPS(false);
+        toast.success('GPS location detected');
+      },
+      (error) => {
+        setIsGettingGPS(false);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            toast.error('Location permission denied');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            toast.error('Location unavailable');
+            break;
+          default:
+            toast.error('Failed to get location');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  }, []);
 
   const handleDeleteAccount = async () => {
     if (deleteConfirmation !== 'DELETE') return;
@@ -267,6 +326,64 @@ export default function SettingsPage() {
                       placeholder="e.g., 00100"
                       className="mt-2"
                     />
+                  </div>
+
+                  {/* GPS Coordinates Section */}
+                  <div className="pt-4 border-t">
+                    <div className="flex items-center justify-between mb-3">
+                      <Label className="text-base font-medium">GPS Coordinates</Label>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={getCurrentLocation}
+                        disabled={isGettingGPS}
+                      >
+                        {isGettingGPS ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Detecting...
+                          </>
+                        ) : (
+                          <>
+                            <Navigation className="w-4 h-4 mr-2" />
+                            Auto-detect
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-3">
+                      Used for real-time delivery tracking and ETA calculations.
+                    </p>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label>Latitude</Label>
+                        <Input
+                          type="number"
+                          step="0.00000001"
+                          value={locationData.latitude}
+                          onChange={(e) => setLocationData(prev => ({ ...prev, latitude: e.target.value }))}
+                          placeholder="e.g., 60.1699"
+                          className="mt-2"
+                        />
+                      </div>
+                      <div>
+                        <Label>Longitude</Label>
+                        <Input
+                          type="number"
+                          step="0.00000001"
+                          value={locationData.longitude}
+                          onChange={(e) => setLocationData(prev => ({ ...prev, longitude: e.target.value }))}
+                          placeholder="e.g., 24.9384"
+                          className="mt-2"
+                        />
+                      </div>
+                    </div>
+                    {locationData.latitude && locationData.longitude && (
+                      <p className="text-xs text-green-600 dark:text-green-400 mt-2 flex items-center gap-1">
+                        <Check className="w-3 h-3" />
+                        GPS location set: {parseFloat(locationData.latitude).toFixed(4)}, {parseFloat(locationData.longitude).toFixed(4)}
+                      </p>
+                    )}
                   </div>
                   <Button
                     onClick={saveLocationData}

@@ -8,12 +8,16 @@ import { Store, Loader2, Check, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { LocationSettingsCard } from '@/components/settings/LocationSettingsCard';
 
 interface ProfileData {
   name: string;
   contact_email: string;
   contact_phone: string;
   street_address: string;
+  latitude: number | null;
+  longitude: number | null;
+  delivery_instructions: string | null;
 }
 
 export default function RestaurantProfilePage() {
@@ -25,6 +29,9 @@ export default function RestaurantProfilePage() {
     contact_email: '',
     contact_phone: '',
     street_address: '',
+    latitude: null,
+    longitude: null,
+    delivery_instructions: null,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -45,7 +52,7 @@ export default function RestaurantProfilePage() {
 
         const { data, error } = await supabase
           .from('restaurants')
-          .select('name, contact_email, contact_phone, street_address')
+          .select('name, contact_email, contact_phone, street_address, latitude, longitude, delivery_instructions')
           .eq('id', user.id)
           .single();
 
@@ -69,6 +76,9 @@ export default function RestaurantProfilePage() {
               : (data.contact_email || user.email || ''),
             contact_phone: data.contact_phone || '',
             street_address: data.street_address || '',
+            latitude: data.latitude ? parseFloat(data.latitude) : null,
+            longitude: data.longitude ? parseFloat(data.longitude) : null,
+            delivery_instructions: data.delivery_instructions || null,
           });
         } else {
           // No data found, use Clerk defaults
@@ -77,6 +87,9 @@ export default function RestaurantProfilePage() {
             contact_email: user.email || '',
             contact_phone: '',
             street_address: '',
+            latitude: null,
+            longitude: null,
+            delivery_instructions: null,
           });
         }
       } catch (err) {
@@ -132,6 +145,36 @@ export default function RestaurantProfilePage() {
       setIsSaving(false);
     }
   }, [user?.id, profileData, updateUserMetadata]);
+
+  // Save location data
+  const saveLocation = useCallback(async (data: {
+    latitude: number | null;
+    longitude: number | null;
+    delivery_instructions?: string | null;
+  }) => {
+    if (!user?.id) return;
+
+    const { error } = await supabase
+      .from('restaurants')
+      .update({
+        latitude: data.latitude,
+        longitude: data.longitude,
+        delivery_instructions: data.delivery_instructions,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', user.id);
+
+    if (error) throw error;
+
+    setProfileData(prev => ({
+      ...prev,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      delivery_instructions: data.delivery_instructions || null,
+    }));
+
+    toast.success('Location saved successfully');
+  }, [user?.id, supabase]);
 
   if (!user) return null;
 
@@ -236,6 +279,19 @@ export default function RestaurantProfilePage() {
                 </>
               )}
             </div>
+          </section>
+
+          {/* Location Settings */}
+          <section className="mb-8">
+            <LocationSettingsCard
+              latitude={profileData.latitude}
+              longitude={profileData.longitude}
+              deliveryInstructions={profileData.delivery_instructions}
+              onSave={saveLocation}
+              showDeliveryInstructions={true}
+              title="Delivery Location"
+              description="Set your restaurant's location for accurate delivery tracking and ETA calculations."
+            />
           </section>
         </div>
       </MainContent>

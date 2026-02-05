@@ -16,6 +16,7 @@ import {
     Menu,
     FileWarning,
     UserCog,
+    MapPin,
     LucideIcon
 } from 'lucide-react';
 import { Logo } from '@/components/Logo';
@@ -43,6 +44,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     const restaurantMenuItems: MenuItem[] = [
         { icon: Home, label: 'Dashboard', path: '/dashboard' },
         { icon: Package, label: 'Deliveries', path: '/deliveries' },
+        { icon: MapPin, label: 'Track Deliveries', path: '/track-deliveries' },
         { icon: FileWarning, label: 'Reclamations', path: '/reclamations' },
         { icon: BarChart3, label: 'Analytics', path: '/analytics' },
         { icon: Building2, label: 'Suppliers', path: '/suppliers' },
@@ -56,6 +58,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         { icon: ShoppingCart, label: 'Incoming Orders', path: '/supplier/orders' },
         { icon: Truck, label: 'Outgoing Deliveries', path: '/supplier/deliveries' },
         { icon: UserCog, label: 'Drivers', path: '/supplier/drivers' },
+        { icon: MapPin, label: 'Driver Monitoring', path: '/supplier/monitoring' },
         { icon: AlertTriangle, label: 'Delivery Issues', path: '/supplier/issues' },
         { icon: ClipboardList, label: 'Product Catalog', path: '/supplier/products' },
         { icon: Users, label: 'Connected Restaurants', path: '/supplier/restaurants' },
